@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental de Armas de Tinta - Spark Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .status-late {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: #fee2e2; }
+            50% { background-color: #fca5a5; }
+            100% { background-color: #fee2e2; }
+        }
+        
+        .custom-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: absolute;
+                z-index: 50;
+                height: 100vh;
+            }
+            
+            .sidebar-open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuButton" class="md:hidden fixed top-4 left-4 z-50 bg-blue-700 text-white p-2 rounded-lg">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar bg-blue-900 text-white w-64 fixed h-full px-4 py-8 hidden md:block">
+        <div class="flex items-center space-x-2 mb-10 px-2">
+            <i class="fas fa-bolt text-yellow-400 text-2xl"></i>
+            <h1 class="text-2xl font-bold">Spark Control</h1>
+        </div>
+        
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" id="dashboardLink" class="flex items-center space-x-2 px-4 py-3 rounded-lg bg-blue-800">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="rentalsLink" class="flex items-center space-x-2 px-4 py-3 rounded-lg hover:bg-blue-800">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Controle de Aluguel</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="clientsLink" class="flex items-center space-x-2 px-4 py-3 rounded-lg hover:bg-blue-800">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="equipmentLink" class="flex items-center space-x-2 px-4 py-3 rounded-lg hover:bg-blue-800">
+                        <i class="fas fa-gun"></i>
+                        <span>Equipamentos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="reportsLink" class="flex items-center space-x-2 px-4 py-3 rounded-lg hover:bg-blue-800">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <p class="font-medium">Admin</p>
+                    <p class="text-xs text-blue-300">admin@sparkcontrol.com</p>
+                </div>
+            </div>
+            <button class="mt-4 w-full py-2 rounded-lg bg-blue-800 hover:bg-blue-700 flex items-center justify-center space-x-2">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="md:ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
+            <h2 id="pageTitle" class="text-xl font-semibold text-gray-800">Dashboard</h2>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <input type="text" placeholder="Buscar..." class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Stats Cards -->
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500">Equipamentos Disponíveis</p>
+                            <h3 class="text-2xl font-bold text-blue-700">24</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-gun text-blue-700"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-green-600 mt-2"><i class="fas fa-arrow-up"></i> 5% desde ontem</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500">Alugueis Ativos</p>
+                            <h3 class="text-2xl font-bold text-blue-700">12</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-exchange-alt text-blue-700"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-red-600 mt-2"><i class="fas fa-arrow-down"></i> 2% desde ontem</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500">Clientes Cadastrados</p>
+                            <h3 class="text-2xl font-bold text-blue-700">48</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-users text-blue-700"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-green-600 mt-2"><i class="fas fa-arrow-up"></i> 10% desde ontem</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500">Devoluções Atrasadas</p>
+                            <h3 class="text-2xl font-bold text-blue-700">3</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-clock text-blue-700"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-red-600 mt-2"><i class="fas fa-arrow-up"></i> 1 desde ontem</p>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-800">Alugueis por Dia</h3>
+                        <select class="border rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Últimos 7 dias</option>
+                            <option>Últimos 30 dias</option>
+                            <option>Últimos 90 dias</option>
+                        </select>
+                    </div>
+                    <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-400">Gráfico de alugueis por dia</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-800">Equipamentos Mais Populares</h3>
+                        <select class="border rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Últimos 7 dias</option>
+                            <option>Últimos 30 dias</option>
+                            <option>Últimos 90 dias</option>
+                        </select>
+                    </div>
+                    <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-400">Gráfico de equipamentos mais alugados</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Rentals -->
+            <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Alugueis Recentes</h3>
+                    <button class="text-blue-700 hover:text-blue-900 text-sm font-medium">Ver todos</button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipamento</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Série</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saída</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devolução</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Silva</td>
+                                <td class="px-6 py-4 whitespace-nowrap">1234567</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10001</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10/06/2023 14:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 14:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Devolvido</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Santos</td>
+                                <td class="px-6 py-4 whitespace-nowrap">7654321</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10002</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023 09:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023 21:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Devolvido</span>
+                                </td>
+                            </tr>
+                            <tr class="status-late">
+                                <td class="px-6 py-4 whitespace-nowrap">Oliveira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">9876543</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10003</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 08:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 16:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Atrasado</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Pereira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">4567890</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10004</td>
+                                <td class="px-6 py-4 whitespace-nowrap">13/06/2023 10:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">14/06/2023 10:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Em andamento</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rentals Content (Hidden by default) -->
+        <div id="rentalsContent" class="p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Controle de Aluguel</h2>
+                <button id="newRentalButton" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo Aluguel</span>
+                </button>
+            </div>
+            
+            <!-- New Rental Form (Hidden by default) -->
+            <div id="newRentalForm" class="bg-white rounded-lg shadow custom-shadow p-6 mb-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Registrar Novo Aluguel</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="clientSearch">Buscar Cliente</label>
+                        <div class="relative">
+                            <input type="text" id="clientSearch" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Digite nome ou matrícula">
+                            <button class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="clientName">Nome</label>
+                            <input type="text" id="clientName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Sobrenome" required>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="clientId">Matrícula Institucional</label>
+                            <input type="text" id="clientId" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="7 dígitos" maxlength="7" required>
+                            <p class="text-xs text-gray-500 mt-1">A matrícula deve conter exatamente 7 dígitos</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="equipmentNumber">Número de Série do Equipamento</label>
+                            <select id="equipmentNumber" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="">Selecione um equipamento</option>
+                                <option value="10001">Spark X1 - 10001</option>
+                                <option value="10002">Spark X1 - 10002</option>
+                                <option value="10003">Spark X1 - 10003</option>
+                                <option value="10004">Spark X1 - 10004</option>
+                                <option value="10005">Spark X1 - 10005</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="rentalDate">Data e Hora de Saída</label>
+                            <input type="datetime-local" id="rentalDate" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="rentalPeriod">Período de Aluguel</label>
+                            <select id="rentalPeriod" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="8">8 horas</option>
+                                <option value="12">12 horas</option>
+                                <option value="24">24 horas</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button id="cancelRentalButton" type="button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg">Registrar Aluguel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rentals Table -->
+            <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Histórico de Alugueis</h3>
+                    <div class="flex space-x-2">
+                        <select class="border rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Filtrar por status</option>
+                            <option>Todos</option>
+                            <option>Ativos</option>
+                            <option>Devolvidos</option>
+                            <option>Atrasados</option>
+                        </select>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipamento</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Série</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saída</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devolução</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Silva</td>
+                                <td class="px-6 py-4 whitespace-nowrap">1234567</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10001</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10/06/2023 14:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 14:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Devolvido</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Santos</td>
+                                <td class="px-6 py-4 whitespace-nowrap">7654321</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10002</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023 09:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023 21:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Devolvido</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="status-late">
+                                <td class="px-6 py-4 whitespace-nowrap">Oliveira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">9876543</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10003</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 08:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 16:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Atrasado</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Pereira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">4567890</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10004</td>
+                                <td class="px-6 py-4 whitespace-nowrap">13/06/2023 10:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">14/06/2023 10:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Em andamento</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Costa</td>
+                                <td class="px-6 py-4 whitespace-nowrap">3456789</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10005</td>
+                                <td class="px-6 py-4 whitespace-nowrap">14/06/2023 15:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">15/06/2023 15:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Em andamento</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-900">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        Mostrando 1 a 5 de 25 registros
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border rounded-lg bg-gray-100 text-gray-700">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border rounded-lg bg-blue-700 text-white">1</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients Content (Hidden by default) -->
+        <div id="clientsContent" class="p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Clientes Cadastrados</h2>
+                <button id="newClientButton" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo Cliente</span>
+                </button>
+            </div>
+            
+            <!-- New Client Form (Hidden by default) -->
+            <div id="newClientForm" class="bg-white rounded-lg shadow custom-shadow p-6 mb-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Cadastrar Novo Cliente</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newClientName">Sobrenome</label>
+                            <input type="text" id="newClientName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Sobrenome" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newClientId">Matrícula Institucional</label>
+                            <input type="text" id="newClientId" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="7 dígitos" maxlength="7" required>
+                            <p class="text-xs text-gray-500 mt-1">A matrícula deve conter exatamente 7 dígitos</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newClientEmail">E-mail</label>
+                            <input type="email" id="newClientEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="email@exemplo.com">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newClientPhone">Telefone</label>
+                            <input type="tel" id="newClientPhone" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="(00) 00000-0000">
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button id="cancelClientButton" type="button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg">Cadastrar Cliente</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Clients Table -->
+            <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Lista de Clientes</h3>
+                    <div class="flex space-x-2">
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar cliente..." class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                        </div>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sobrenome</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-mail</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alugueis</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Silva</td>
+                                <td class="px-6 py-4 whitespace-nowrap">1234567</td>
+                                <td class="px-6 py-4 whitespace-nowrap">silva@exemplo.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap">(11) 98765-4321</td>
+                                <td class="px-6 py-4 whitespace-nowrap">5</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Santos</td>
+                                <td class="px-6 py-4 whitespace-nowrap">7654321</td>
+                                <td class="px-6 py-4 whitespace-nowrap">santos@exemplo.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap">(11) 91234-5678</td>
+                                <td class="px-6 py-4 whitespace-nowrap">3</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Oliveira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">9876543</td>
+                                <td class="px-6 py-4 whitespace-nowrap">oliveira@exemplo.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap">(11) 99876-5432</td>
+                                <td class="px-6 py-4 whitespace-nowrap">2</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Pereira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">4567890</td>
+                                <td class="px-6 py-4 whitespace-nowrap">pereira@exemplo.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap">(11) 94567-8901</td>
+                                <td class="px-6 py-4 whitespace-nowrap">1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Costa</td>
+                                <td class="px-6 py-4 whitespace-nowrap">3456789</td>
+                                <td class="px-6 py-4 whitespace-nowrap">costa@exemplo.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap">(11) 93456-7890</td>
+                                <td class="px-6 py-4 whitespace-nowrap">4</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        Mostrando 1 a 5 de 15 registros
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border rounded-lg bg-gray-100 text-gray-700">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border rounded-lg bg-blue-700 text-white">1</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Content (Hidden by default) -->
+        <div id="equipmentContent" class="p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Gerenciamento de Equipamentos</h2>
+                <button id="newEquipmentButton" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo Equipamento</span>
+                </button>
+            </div>
+            
+            <!-- New Equipment Form (Hidden by default) -->
+            <div id="newEquipmentForm" class="bg-white rounded-lg shadow custom-shadow p-6 mb-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Cadastrar Novo Equipamento</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="equipmentModel">Modelo</label>
+                            <input type="text" id="equipmentModel" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="Spark X1" readonly>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="equipmentSerial">Número de Série</label>
+                            <input type="text" id="equipmentSerial" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="5 dígitos" maxlength="5" required>
+                            <p class="text-xs text-gray-500 mt-1">O número de série deve conter exatamente 5 dígitos</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="equipmentStatus">Status</label>
+                            <select id="equipmentStatus" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="available">Disponível</option>
+                                <option value="maintenance">Em manutenção</option>
+                                <option value="retired">Desativado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="equipmentNotes">Observações</label>
+                            <textarea id="equipmentNotes" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button id="cancelEquipmentButton" type="button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg">Cadastrar Equipamento</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Equipment Table -->
+            <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Lista de Equipamentos</h3>
+                    <div class="flex space-x-2">
+                        <select class="border rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Filtrar por status</option>
+                            <option>Todos</option>
+                            <option>Disponíveis</option>
+                            <option>Em manutenção</option>
+                            <option>Desativados</option>
+                        </select>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Série</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último Aluguel</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alugueis</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10001</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10002</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">8</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10003</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Em manutenção</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">10/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">15</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10004</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">13/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">5</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10005</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Desativado</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">05/06/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">20</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button class="text-blue-600 hover:text-blue-900 mr-2">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        Mostrando 1 a 5 de 24 registros
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border rounded-lg bg-gray-100 text-gray-700">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border rounded-lg bg-blue-700 text-white">1</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">4</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Content (Hidden by default) -->
+        <div id="reportsContent" class="p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Relatórios e Estatísticas</h2>
+                <button class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <i class="fas fa-download"></i>
+                    <span>Exportar Todos</span>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-800">Relatório de Alugueis</h3>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="text-sm font-medium">Período</p>
+                                <div class="flex space-x-2 mt-1">
+                                    <input type="date" class="border rounded-lg px-2 py-1 text-sm">
+                                    <span>até</span>
+                                    <input type="date" class="border rounded-lg px-2 py-1 text-sm">
+                                </div>
+                            </div>
+                            <button class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded-lg text-sm">
+                                Gerar
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="text-sm font-medium">Por Cliente</p>
+                                <div class="mt-1">
+                                    <select class="border rounded-lg px-2 py-1 text-sm w-full">
+                                        <option>Todos os clientes</option>
+                                        <option>Silva (1234567)</option>
+                                        <option>Santos (7654321)</option>
+                                        <option>Oliveira (9876543)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded-lg text-sm">
+                                Gerar
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="text-sm font-medium">Por Equipamento</p>
+                                <div class="mt-1">
+                                    <select class="border rounded-lg px-2 py-1 text-sm w-full">
+                                        <option>Todos os equipamentos</option>
+                                        <option>Spark X1 - 10001</option>
+                                        <option>Spark X1 - 10002</option>
+                                        <option>Spark X1 - 10003</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded-lg text-sm">
+                                Gerar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-800">Estatísticas de Uso</h3>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-medium mb-2">Top 5 Clientes</p>
+                            <div class="h-40 bg-white rounded-lg flex items-center justify-center">
+                                <p class="text-gray-400">Gráfico de top clientes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-medium mb-2">Top 5 Equipamentos</p>
+                            <div class="h-40 bg-white rounded-lg flex items-center justify-center">
+                                <p class="text-gray-400">Gráfico de top equipamentos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow custom-shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Histórico de Atrasos</h3>
+                    <button class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matrícula</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipamento</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Série</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Prevista</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Devolução</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atraso</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="status-late">
+                                <td class="px-6 py-4 whitespace-nowrap">Oliveira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">9876543</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10003</td>
+                                <td class="px-6 py-4 whitespace-nowrap">11/06/2023 16:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">12/06/2023 09:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap">17 horas</td>
+                            </tr>
+                            <tr class="status-late">
+                                <td class="px-6 py-4 whitespace-nowrap">Rodrigues</td>
+                                <td class="px-6 py-4 whitespace-nowrap">2345678</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10006</td>
+                                <td class="px-6 py-4 whitespace-nowrap">09/06/2023 18:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10/06/2023 10:15</td>
+                                <td class="px-6 py-4 whitespace-nowrap">16 horas</td>
+                            </tr>
+                            <tr class="status-late">
+                                <td class="px-6 py-4 whitespace-nowrap">Ferreira</td>
+                                <td class="px-6 py-4 whitespace-nowrap">5678901</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Spark X1</td>
+                                <td class="px-6 py-4 whitespace-nowrap">10007</td>
+                                <td class="px-6 py-4 whitespace-nowrap">05/06/2023 12:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">06/06/2023 09:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap">21 horas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        Mostrando 1 a 3 de 3 registros
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border rounded-lg bg-gray-100 text-gray-700">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border rounded-lg bg-blue-700 text-white">1</button>
+                        <button class="px-3 py-1 border rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuButton').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+            document.getElementById('sidebar').classList.toggle('sidebar-open');
+        });
+
+        // Navigation
+        const navLinks = {
+            dashboardLink: 'dashboardContent',
+            rentalsLink: 'rentalsContent',
+            clientsLink: 'clientsContent',
+            equipmentLink: 'equipmentContent',
+            reportsLink: 'reportsContent'
+        };
+
+        Object.entries(navLinks).forEach(([linkId, contentId]) => {
+            document.getElementById(linkId).addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Hide all content
+                document.querySelectorAll('[id$="Content"]').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                
+                // Show selected content
+                document.getElementById(contentId).classList.remove('hidden');
+                
+                // Update active nav link
+                document.querySelectorAll('#sidebar a').forEach(el => {
+                    el.classList.remove('bg-blue-800');
+                });
+                this.classList.add('bg-blue-800');
+                
+                // Update page title
+                const titleMap = {
+                    'dashboardContent': 'Dashboard',
+                    'rentalsContent': 'Controle de Aluguel',
+                    'clientsContent': 'Clientes Cadastrados',
+                    'equipmentContent': 'Gerenciamento de Equipamentos',
+                    'reportsContent': 'Relatórios e Estatísticas'
+                };
+                document.getElementById('pageTitle').textContent = titleMap[contentId];
+                
+                // Close mobile menu if open
+                if (!document.getElementById('sidebar').classList.contains('hidden') && 
+                    window.innerWidth < 768) {
+                    document.getElementById('sidebar').classList.add('hidden');
+                }
+            });
+        });
+
+        // Form toggles
+        const formToggles = {
+            newRentalButton: 'newRentalForm',
+            cancelRentalButton: 'newRentalForm',
+            newClientButton: 'newClientForm',
+            cancelClientButton: 'newClientForm',
+            newEquipmentButton: 'newEquipmentForm',
+            cancelEquipmentButton: 'newEquipmentForm'
+        };
+
+        Object.entries(formToggles).forEach(([buttonId, formId]) => {
+            document.getElementById(buttonId)?.addEventListener('click', function() {
+                document.getElementById(formId).classList.toggle('hidden');
+            });
+        });
+
+        // Set current date as default for rental date
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16);
+        document.getElementById('rentalDate').value = formattedDate;
+
+        // Validate client ID (7 digits)
+        document.getElementById('clientId').addEventListener('input', function() {
+            const value = this.value.replace(/\D/g, '');
+            this.value = value.slice(0, 7);
+            
+            if (value.length === 7) {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-green-500');
+            } else {
+                this.classList.remove('border-green-500');
+                this.classList.add('border-red-500');
+            }
+        });
+
+        // Validate equipment serial (5 digits)
+        document.getElementById('equipmentSerial').addEventListener('input', function() {
+            const value = this.value.replace(/\D/g, '');
+            this.value = value.slice(0, 5);
+            
+            if (value.length === 5) {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-green-500');
+            } else {
+                this.classList.remove('border-green-500');
+                this.classList.add('border-red-500');
+            }
+        });
+
+        // Auto-fill client name when searching
+        document.getElementById('clientSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const clients = {
+                '1234567': 'Silva',
+                '7654321': 'Santos',
+                '9876543': 'Oliveira',
+                '4567890': 'Pereira',
+                '3456789': 'Costa'
+            };
+            
+            if (clients[searchTerm]) {
+                document.getElementById('clientName').value = clients[searchTerm];
+                document.getElementById('clientId').value = searchTerm;
+            }
+        });
+    </script>
+</body>
+</html>
